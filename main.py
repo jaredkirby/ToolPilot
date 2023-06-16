@@ -36,18 +36,28 @@ tool_type = st.radio(
 tool_explanation = {
     "Discipline of Study": """
     #### The "Dicipline of Study" Tool
-    This tool helps you generate a prompt intro that focus the language model on a particular area of its training.
+    This tool helps you generate a prompt intro that focus the language model on a 
+    particular area of its training.
     ##### Example:
-    If you want to ask a question about the benefits of exercise, you might use this tool by giving the topics 'exercise' and 'health'.
+    If you want to ask a question about the benefits of exercise, you might use this 
+    tool by giving the topics 'exercise' and 'health'.
     """,
     "PromptPilot": """
-    The PromptPilot tool helps you generate a prompt that meets the best practices of prompt engineering. For example, if you want to ask a question about the benefits of exercise, you could input the prompt'What is the best exercise program for people over the age of 40?.
+    The PromptPilot tool helps you generate a prompt that meets the best practices of 
+    prompt engineering. For example, if you want to ask a question about the benefits 
+    of exercise, you could input the prompt'What is the best exercise program for 
+    people over the age of 40?.
     """,
     "Improve Prompt Instructions": """
-    The Improve Prompt Instructions tool helps you generate a prompt that provides clear instructions for the language model. For example, if you want to generate a specific exercise program, you could input the instructions'Generate a 12-week exercise program for people over the age of 40 and include a list of exercises, sets, and reps for each day of the week.'
+    The Improve Prompt Instructions tool helps you generate a prompt that provides 
+    clear instructions for the language model. For example, if you want to generate 
+    a specific exercise program, you could input the instructions'Generate a 12-week 
+    exercise program for people over the age of 40 and include a list of exercises, 
+    sets, and reps for each day of the week.'
     """,
     "Prompt Purpose": """
-    The Prompt Purpose tool helps by reviewing a given prompt and generating a summary of the prompt's purpose.
+    The Prompt Purpose tool helps by reviewing a given prompt and generating a summary 
+    of the prompt's purpose.
     """,
 }
 
