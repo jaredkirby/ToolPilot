@@ -1,6 +1,6 @@
 # ToolPilot
 
-![ToolPilot](https://i.imgur.com/WAWX9t4.jpeg)
+![ToolPilot](images\jpkirby_illustration_of_a_tool_fixing_a_series_of_letters_1497b672-ccec-457f-b820-de06f0e18deb.png)
 
 ToolPilot is a program that provides a selection of prompt refinement tools to help you generate better prompts for ChatGPT. It includes the following tools:
 
