@@ -20,7 +20,6 @@ better prompts for ChatGPT.
 """
 )
 
-
 # Add a dropdown menu to select the prompt tool type
 st.markdown("### Select a tool:")
 tool_type = st.radio(
@@ -71,8 +70,6 @@ tool_functions = {
     "Improve Prompt Instructions": instruct.instruct_generation,
     "Prompt Purpose": purpose.purpose_generation,
 }
-
-st.sidebar.markdown("---")
 
 st.sidebar.markdown(
     """
