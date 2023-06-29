@@ -31,4 +31,4 @@ def dos_generation(user_input: str):
     result = llm(formatted_prompt)
     print("DoS Result:", result.content)
 
-    return result.contents
+    return result.content
