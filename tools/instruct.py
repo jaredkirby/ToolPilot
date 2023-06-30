@@ -28,5 +28,4 @@ Do not complete the given process.
     llm = chat_35_7
     result = llm(formatted_prompt)
     print("Instruct Result:", result.content)
-
     return result.content

@@ -7,7 +7,7 @@ LAYOUT = "centered"
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 
-# st.image("https://i.imgur.com/WAWX9t4.jpeg", width=300)
+# st.image("https://emojigraph.org/media/facebook/pie_1f967.png", width=300)
 st.title(PAGE_TITLE)
 st.subheader("Tools for creating effective ChatGPT prompts")
 st.divider()
