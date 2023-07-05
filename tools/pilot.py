@@ -2,10 +2,8 @@ from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
 )
-from utils import chat_35_7
 
-
-def pilot_generation(user_input: str):
+def get_pilot_response(chat, user_input: str):
     pilot_gen_template = """
 System message: "You are PromptPilot, a large language model trained by OpenAI and 
 prompt engineered by [Jared Kirby](https://github.com/jaredkirby). 
@@ -57,8 +55,6 @@ Assistant:
     user_prompt = HumanMessagePromptTemplate.from_template(template=pilot_gen_template)
     chat_prompt = ChatPromptTemplate.from_messages([user_prompt])
     formatted_prompt = chat_prompt.format_prompt(user_input=user_input).to_messages()
-    llm = chat_35_7
+    llm = chat
     result = llm(formatted_prompt)
-    print("Pilot Result:", result.content)
-
     return result.content

@@ -2,10 +2,8 @@ from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
 )
-from utils import chat_35_7
 
-
-def purpose_generation(user_input: str):
+def get_purpose_response(chat, user_input: str):
     purpose_gen_template = """
 You are a natural language processing researcher explaining the techniques for 
 prompting large language models. 
@@ -20,13 +18,9 @@ Do not answer the prompt.
 Analyze the purpose of the prompt and develop a concise summary explanation.
 """
 
-    user_prompt = HumanMessagePromptTemplate.from_template(
-        template=purpose_gen_template
-    )
+    user_prompt = HumanMessagePromptTemplate.from_template(purpose_gen_template)
     chat_prompt = ChatPromptTemplate.from_messages([user_prompt])
     formatted_prompt = chat_prompt.format_prompt(user_input=user_input).to_messages()
-    llm = chat_35_7
+    llm = chat
     result = llm(formatted_prompt)
-    print("Purpose Result:", result.content)
-
     return result.content
