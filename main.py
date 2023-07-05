@@ -1,114 +1,170 @@
 import streamlit as st
-from tools import dos, pilot, instruct, purpose
 
-PAGE_TITLE = "ToolPilot"
-PAGE_ICON = ":wrench:"
+from langchain.chat_models import ChatOpenAI
+
+from utils.stream import StreamHandler
+import tools.dos as dos
+import tools.pilot as pilot 
+import tools.instruct as instruct 
+import tools.purpose as purpose
+
+openai_api_key = st.secrets["OPENAI_API_KEY"]
+
+PAGE_TITLE = "PromptPilot"
+PAGE_ICON = "🛠️"
+SUB_TITLE = "Tools for Prompting LLMs"
 LAYOUT = "centered"
+MODEL = [
+    'gpt-4',
+    'gpt-3.5-turbo',
+    'gpt-3.5-turbo-16k',
+]
+TEMPERATURE = {
+    'Discipline of Study': 0.75,
+    'PromptPilot': 1.0,
+    'Improve Prompt Instructions': 1.0,
+    'Prompt Purpose': 0.75,
+}
+TOOL_FUNCTIONS = {
+    'Discipline of Study': dos.get_dos_response,
+    'PromptPilot': pilot.get_pilot_response,
+    'Improve Prompt Instructions': instruct.get_instruct_response,
+    'Prompt Purpose': purpose.get_purpose_response,
+}
+DOS = "Discipline of Study"
+PILOT = "PromptPilot"
+INSTRUCT = "Improve Prompt Instructions"
+PURPOSE = "Prompt Purpose"
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 
-# st.image("https://emojigraph.org/media/facebook/pie_1f967.png", width=300)
-st.title(PAGE_TITLE)
-st.subheader("Tools for creating effective ChatGPT prompts")
-st.divider()
-
-st.sidebar.title("About")
-st.sidebar.markdown(
-    """
-**ToolPilot** provides a selection of prompt refinement tools that help you generate the
-better prompts for ChatGPT.
-"""
-)
-
-# Add a dropdown menu to select the prompt tool type
-st.markdown("### Select a tool:")
-tool_type = st.radio(
-    "Tool explanation below",
-    [
-        "Discipline of Study",
-        "PromptPilot",
-        "Improve Prompt Instructions",
-        "Prompt Purpose",
-    ],
-)
-
-tool_explanation = {
-    "Discipline of Study": """
-    #### The "Dicipline of Study" Tool
-    This tool helps you generate a prompt intro that focus the language model on a 
-    particular area of its training.
-    ##### Example:
-    If you want to ask a question about the benefits of exercise, you might use this 
-    tool by giving the topics 'exercise' and 'health'.
-    """,
-    "PromptPilot": """
-    The PromptPilot tool helps you generate a prompt that meets the best practices of 
-    prompt engineering. For example, if you want to ask a question about the benefits 
-    of exercise, you could input the prompt'What is the best exercise program for 
-    people over the age of 40?.
-    """,
-    "Improve Prompt Instructions": """
-    The Improve Prompt Instructions tool helps you generate a prompt that provides 
-    clear instructions for the language model. For example, if you want to generate 
-    a specific exercise program, you could input the instructions'Generate a 12-week 
-    exercise program for people over the age of 40 and include a list of exercises, 
-    sets, and reps for each day of the week.'
-    """,
-    "Prompt Purpose": """
-    The Prompt Purpose tool helps by reviewing a given prompt and generating a summary 
-    of the prompt's purpose.
-    """,
-}
-
-st.markdown("### Tool Explanation:")
-st.markdown(tool_explanation[tool_type])
-
-# Create a dictionary mapping tool types to their corresponding functions
-tool_functions = {
-    "Discipline of Study": dos.dos_generation,
-    "PromptPilot": pilot.pilot_generation,
-    "Improve Prompt Instructions": instruct.instruct_generation,
-    "Prompt Purpose": purpose.purpose_generation,
-}
-
-st.sidebar.markdown(
-    """
----
-:robot_face: Application created by [@Kirby_](https://twitter.com/Kirby_) & GPT-4
-
-:point_right: The code for this app is available on [GitHub](https://github.com/jaredkirby)
-
----
-Built by **Jared Kirby** :wave:
-
-[Twitter](https://twitter.com/Kirby_) | [GitHub](https://github.com/jaredkirby) | [LinkedIn](https://www.linkedin.com/in/jared-kirby/) | [Portfolio](https://www.jaredkirby.me)
-
-    """
-)
-
-st.markdown("### Enter your input below:")
-
-
-def get_text() -> str:
-    user_input = st.text_area(
-        "Input type will change depending on the tool selected.",
-        "Hello! Will you help me improve my prompt?",
-        key="input",
+def create_chat(temperature, model, stream_handler):
+    chat = ChatOpenAI(
+        temperature=temperature, 
+        model=model, 
+        openai_api_key=openai_api_key, 
+        request_timeout=250,
+        streaming=True, 
+        callbacks=[stream_handler],
     )
-    return user_input
+    return chat
+
+def handle_tab(tab_name, samples, button_labels, input_labels, help_labels):
+    # Get example input for the given tab
+    sample = samples.get(tab_name)
+
+    # Get the label to be displayed on the input field for the given tab
+    input_label = input_labels.get(tab_name)
+
+    # Get the help text to be displayed with the input field for the given tab
+    help_label = help_labels.get(tab_name)
+
+    # Create an input text area with a label, example text and help text specific to the given tab
+    user_input = st.text_area(f"Input {input_label}", sample, key=f"{tab_name}_input", help=help_label)
+
+    # Create a section for advanced options
+    with st.expander("Advanced Options"):
+        # Allow user to select a model from a dropdown
+        model = st.selectbox("Select model", MODEL, key=f"{tab_name}_model")
+
+        # Get the default 'temperature' parameter for the selected model
+        temp = TEMPERATURE.get(tab_name)
+
+        # Allow user to adjust the 'temperature' parameter using a slider
+        temperature = st.slider('Select temperature', min_value=0.0, max_value=2.0, step=0.05, value=temp, key=f"{tab_name}_temp")
+
+    # Get the label to be displayed on the 'Generate' button for the given tab
+    button_label = button_labels.get(tab_name)
+
+    # Create a 'Generate' button with a label specific to the given tab
+    button = st.button(f"Generate {button_label}", key=f"{tab_name}_button")
+
+    # If the 'Generate' button is clicked
+    if button:
+        # Create an empty chat box
+        chat_box = st.empty()
+
+        # Initialize the stream handler with the chat box
+        stream_handler = StreamHandler(chat_box)
+
+        # Initialize a chat session with the selected temperature and model, and the stream handler
+        chat = create_chat(temperature, model, stream_handler)
+
+        # Get the function associated with the given tab
+        function = TOOL_FUNCTIONS.get(tab_name)
+
+        # If there is a function associated with the tab, execute it with the chat and user_input as parameters
+        if function:
+            function(chat, user_input)
 
 
-user_input = get_text()
 
-button = st.button("Generate")
-
-if user_input and button:
-    with st.spinner("Generating prompt..."):
-        # Use the tool_type selected by the user to call the corresponding function
-        output = tool_functions[tool_type](user_input)
+def main():
     st.markdown(
-        f"""
-        ### Pilot:
-        ### {output}
+        f"<h1 style='text-align: center;'>{PAGE_TITLE} {PAGE_ICON} <br> {SUB_TITLE}</h1>",
+        unsafe_allow_html=True,
+    )
+    
+    # Define the examples dictionary
+    examples = {
+        DOS: "Youtube video writer and editor for a DIY Entrepreneurs focused channel",
+        PILOT: "Plan, write, and edit scripts for Youtube videos",
+        INSTRUCT: "Write and edit scripts for Youtube videos",
+        PURPOSE: "Write and edit scripts for Youtube videos",
+    }
+
+    # Define the button label dictionary
+    button_labels = {
+        DOS: "Discipline",
+        PILOT: "Prompt",
+        INSTRUCT: "Instructions",
+        PURPOSE: "Purpose",
+    }
+
+    # Define the input label dictionary
+    input_labels = {
+        DOS: "Topic or Objective",
+        PILOT: "Original Prompt",
+        INSTRUCT: "Original Instructions",
+        PURPOSE: "Prompt",
+    }
+
+    # Define the help label dictionary
+    help_labels = {
+        DOS: 'This tool helps you generate a prompt intro that focus the language model on a particular area of its training. Example: If you want to ask a question about the benefits of exercise, you might use this tool by giving the topics "exercise" and "health".',
+        PILOT: 'The PromptPilot tool helps you generate a prompt that meets the best practices of prompt engineering. For example, if you want to ask a question about the benefits of exercise, you could input the prompt "What is the best exercise program for people over the age of 40?"',
+        INSTRUCT: "The Improve Prompt Instructions tool helps you generate a prompt that provides clear instructions for the language model. For example, if you want to generate a specific exercise program, you could input the instructions'Generate a 12-week exercise program for people over the age of 40 and include a list of exercises, sets, and reps for each day of the week.",
+        PURPOSE: "The Prompt Purpose tool helps by reviewing a given prompt and generating a summary of the prompt's purpose.",
+    }
+
+    # Set up tabs
+    tabs = [
+        DOS,
+        PILOT,
+        INSTRUCT,
+        PURPOSE
+    ]
+
+    tab1, tab2, tab3, tab4 = st.tabs(tabs)
+    
+    with tab1:
+        handle_tab(tabs[0], examples, button_labels, input_labels, help_labels)
+    with tab2:
+        handle_tab(tabs[1], examples, button_labels, input_labels, help_labels)
+    with tab3:
+        handle_tab(tabs[2], examples, button_labels, input_labels, help_labels)
+    with tab4:
+        handle_tab(tabs[3], examples, button_labels, input_labels, help_labels)
+
+    st.markdown(
+        """
+    ---
+    Built by **Jared Kirby** :wave:
+
+    [Twitter](https://twitter.com/Kirby_) | [GitHub](https://github.com/jaredkirby) | [LinkedIn](https://www.linkedin.com/in/jared-kirby/) | [Portfolio](https://www.jaredkirby.me)
+
         """
     )
+
+if __name__ == "__main__":
+    main()
