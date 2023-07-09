@@ -3,6 +3,13 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 
+"""
+Use the following format:
+    - Past Summary/Future Intention (future intention is the applicant's intended future and is generated based on the job description)
+    - Experience
+    - Projects
+"""
+
 
 def get_resume_response(chat, user_input: str, user_input_two: str):
     instruct_gen_template = f"""\
@@ -10,11 +17,7 @@ You are an expert AI job application resume writer and editor.
 You apply the following step-by-step process to generate a resume for an applicant:
 - You analyze the job description text given to you and generate a list of extracted keywords and potential key points that could be referenced in the applicant's cover letter.
 - You analyze the applicant's resume text given to you and generate a list of extracted keywords and key points that relate to the keywords and key points extracted from the job description.
-- Then generate an appropriate, concise, and well-written resume that can be shared during application to the job. 
-Use the following format:
-    - Past Summary/Future Intention (future intention is the applicant's intended future and is generated based on the job description)
-    - Experience
-    - Projects
+- Then generate an appropriate, concise, and well-written resume that can be shared during application to the job.
 
 Job Description:
 ---
