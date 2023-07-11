@@ -5,8 +5,6 @@ from langchain.prompts import (
 
 from .base_tool import BaseTool
 
-from config import INSTRUCT
-
 
 class InstructTool(BaseTool):
     def __init__(self):
