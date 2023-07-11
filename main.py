@@ -12,10 +12,10 @@ from config import (
     MODEL,
 )
 
-from secret import OPENAI_API_KEY
+# from secret import OPENAI_API_KEY
 
-openai_api_key = OPENAI_API_KEY
-# openai_api_key = st.secrets["OPENAI_API_KEY"]
+# openai_api_key = OPENAI_API_KEY
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 
