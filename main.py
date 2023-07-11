@@ -12,28 +12,29 @@ from config import (
     MODEL,
 )
 
-# from secret import OPENAI_API_KEY
-
-# openai_api_key = OPENAI_API_KEY
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 
 
 def create_chat(temperature, model, stream_handler):
-    chat = ChatOpenAI(
-        temperature=temperature,
-        model=model,
-        openai_api_key=openai_api_key,
-        request_timeout=250,
-        streaming=True,
-        callbacks=[stream_handler],
-    )
+    try:
+        chat = ChatOpenAI(
+            temperature=temperature,
+            model=model,
+            openai_api_key=openai_api_key,
+            request_timeout=250,
+            streaming=True,
+            callbacks=[stream_handler],
+        )
+    except Exception as e:
+        st.error(f"An error occurred while creating the chat session: {str(e)}")
+        chat = None
     return chat
 
 
-def handle_tab(tool):
-    # Create an input text area for each input field required by the tool
+# Function to create an input text area for each input field required by the tool
+def create_input_fields(tool):
     user_inputs = []
     for input_field in tool.inputs:
         user_input = st.text_area(
@@ -43,21 +44,19 @@ def handle_tab(tool):
             help=input_field["help_label"],
         )
         user_inputs.append(user_input)
+    return user_inputs
 
-    # Create a section for advanced options
+
+# Function to create a section for advanced options
+def create_advanced_options(tool):
     with st.expander("Advanced Options"):
-        # Allow user to select a model from a dropdown
         model = st.selectbox(
             "Select model",
             MODEL,
             key=f"{tool.name}_model",
             index=MODEL.index(tool.model),
         )
-
-        # Get the default 'temperature' parameter for the selected model
         temp = tool.temperature
-
-        # Allow user to adjust the 'temperature' parameter using a slider
         temperature = st.slider(
             "Select temperature",
             min_value=0.0,
@@ -66,29 +65,82 @@ def handle_tab(tool):
             value=temp,
             key=f"{tool.name}_temp",
         )
+    return model, temperature
 
-    # Get the label to be displayed on the 'Generate' button for the given tab
+
+# Function to create a 'Generate' button with a label specific to the given tab
+def create_generate_button(tool):
     button_label = "Generate " + " / ".join(
         [input_field["button_label"] for input_field in tool.inputs]
     )
-
-    # Create a 'Generate' button with a label specific to the given tab
     button = st.button(button_label, key=f"{tool.name}_button")
+    return button
 
-    # If the 'Generate' button is clicked
+
+# Function to handle the 'Generate' button when it is clicked
+def handle_button_click(button, tool, temperature, model, user_inputs):
     if button:
-        # Create an empty chat box
+        st.markdown("**Response:**")
         chat_box = st.empty()
-
-        # Initialize the stream handler with the chat box
         stream_handler = StreamHandler(chat_box)
-
-        # Initialize a chat session with the selected temperature and model, and the stream handler
         chat = create_chat(temperature, model, stream_handler)
+        if chat and tool:
+            try:
+                response = tool.execute(chat, *user_inputs)
+                # Save the selected model and temperature along with the response
+                response_with_settings = {
+                    "response": response,
+                    "model": model,
+                    "temperature": temperature,
+                }
+                if "responses" not in st.session_state:
+                    st.session_state["responses"] = {}
+                if tool.name not in st.session_state["responses"]:
+                    st.session_state["responses"][tool.name] = []
+                st.session_state["responses"][tool.name].append(response_with_settings)
+            except Exception as e:
+                st.error(f"An error occurred while executing the tool: {str(e)}")
 
-        # If there is a tool associated with the tab, execute it with the chat and user_inputs as parameters
-        if tool:
-            tool.execute(chat, *user_inputs)
+
+def handle_tab(tool):
+    # Initialize 'responses' in session state if it doesn't exist
+    if "responses" not in st.session_state:
+        st.session_state["responses"] = {}
+
+    # Always create the input fields, advanced options, and the button
+    user_inputs = create_input_fields(tool)
+    model, temperature = create_advanced_options(tool)
+    button = create_generate_button(tool)
+
+    handle_button_click(button, tool, temperature, model, user_inputs)
+
+    # Display the 'Clear Responses' button if there are saved responses for the current tab
+    if (
+        tool.name in st.session_state["responses"]
+        and st.session_state["responses"][tool.name]
+    ):
+        st.markdown(
+            """
+                    --- 
+                    **Past Responses:**
+                    """
+        )
+        for i, response_with_settings in enumerate(
+            st.session_state["responses"].get(tool.name, [])
+        ):
+            with st.expander(
+                f'Response {i+1} - Model: "{response_with_settings["model"]}", Temp: "{response_with_settings["temperature"]}"'
+            ):
+                st.write(response_with_settings["response"])
+
+        clear_button = st.button(f"Clear Responses for {tool.name}")
+        if clear_button:
+            # Clear the responses for the current tab
+            st.session_state["responses"][tool.name] = []
+            clear_button = None
+            st.experimental_rerun()
+    else:
+        clear_button = None
 
 
 def main():
