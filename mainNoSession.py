@@ -3,7 +3,7 @@ import streamlit as st
 from langchain.chat_models import ChatOpenAI
 
 from utils.stream_response import StreamHandler
-from tools.tool_registry import TOOL_REGISTRY
+from tools.tools_utils.tool_registry import TOOL_REGISTRY
 from config import (
     PAGE_TITLE,
     PAGE_ICON,

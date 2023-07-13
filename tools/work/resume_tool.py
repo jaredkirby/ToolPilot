@@ -3,7 +3,7 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 
-from .base_tool import BaseTool
+from ..tools_utils.base_tool import BaseTool
 
 
 class ResumeTool(BaseTool):
@@ -59,7 +59,8 @@ class ResumeTool(BaseTool):
         )
         chat_prompt = ChatPromptTemplate.from_messages([user_prompt])
         formatted_prompt = chat_prompt.format_prompt(
-            user_input=inputs[0], user_input_two=inputs[1] if len(inputs) > 1 else None
+            job_description=inputs[0],
+            user_resume=inputs[1] if len(inputs) > 1 else None,
         ).to_messages()
         llm = chat
         result = llm(formatted_prompt)

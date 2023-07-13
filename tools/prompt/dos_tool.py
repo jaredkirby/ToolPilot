@@ -4,7 +4,7 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 
-from .base_tool import BaseTool
+from ..tools_utils.base_tool import BaseTool
 
 
 class DosTool(BaseTool):
