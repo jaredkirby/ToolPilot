@@ -3,8 +3,8 @@ class BaseTool:
         self.name = name
         self.model = model
         self.temperature = temperature
-        self.file_inputs: dict = file_inputs
-        self.inputs: dict = inputs
+        self.file_inputs = file_inputs
+        self.inputs = inputs
 
     def execute(self, chat, tool_registry, *args):
         pass
