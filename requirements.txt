@@ -1,4 +1,5 @@
 openai
 streamlit
 langchain
-metaphor_python
+# metaphor_python
+# lancedb

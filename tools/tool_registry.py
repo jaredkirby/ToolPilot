@@ -5,8 +5,9 @@ from .pilot_tool import PilotTool
 from .instruct_tool import InstructTool
 from .purpose_tool import PurposeTool
 from .resume_tool import ResumeTool
-from .research_tool import ResearchAgentTool
-from .shopper_tool import ShopperTool
+
+# from .research_tool import ResearchAgentTool
+# from .shopper_tool import ShopperTool
 
 
 metaphor_api_key = st.secrets["METAPHOR_API_KEY"]
@@ -17,6 +18,6 @@ TOOL_REGISTRY = {
     "Improve Prompt Instructions": InstructTool(),
     "Prompt Purpose": PurposeTool(),
     "Resume": ResumeTool(),
-    "AI Research Agent": ResearchAgentTool(metaphor_api_key),
-    "Shopper": ShopperTool(),
+    # "AI Research Agent": ResearchAgentTool(metaphor_api_key),
+    # "Shopper": ShopperTool(),
 }

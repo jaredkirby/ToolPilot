@@ -4,3 +4,6 @@ secret.py
 __pycache__
 /old
 mainLocal.py
+/vector_db
+shopper_tool.py
+research_tool.py
