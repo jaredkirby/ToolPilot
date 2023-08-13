@@ -102,7 +102,7 @@ def handle_button_click(button, tool, temperature, model, user_inputs, user_uplo
         chat = create_chat(temperature, model, stream_handler)
         if chat and tool:
             try:
-                response = tool.execute(chat, user_inputs[0], user_uploads[0])
+                response = tool.execute(chat, *user_inputs, *user_uploads)
                 # Save the selected model and temperature along with the response
                 response_with_settings = {
                     "response": response,
