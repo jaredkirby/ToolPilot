@@ -12,6 +12,7 @@ class PurposeTool(BaseTool):
             name="Prompt Purpose",
             model="gpt-3.5-turbo",
             temperature=0.75,
+            file_inputs=None,
             inputs=[
                 {
                     "input_label": "Prompt",
@@ -24,17 +25,17 @@ class PurposeTool(BaseTool):
 
     def execute(self, chat, inputs):
         purpose_gen_template = f"""
-    You are a natural language processing researcher explaining the techniques for 
-    prompting large language models. 
-    Please write a short overview of the purpose of the following large language model 
-    prompting tool: 
+You are a natural language processing researcher explaining the techniques for 
+prompting large language models. 
+Please write a short overview of the purpose of the following large language model 
+prompting tool: 
 
-    --
-    "{inputs}"
-    --
+--
+"{inputs}"
+--
 
-    Do not answer the prompt. 
-    Analyze the purpose of the prompt and develop a concise summary explanation.
+Do not answer the prompt. 
+Analyze the purpose of the prompt and develop a concise summary explanation.
     """
 
         user_prompt = HumanMessagePromptTemplate.from_template(purpose_gen_template)

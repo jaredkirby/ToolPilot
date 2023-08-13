@@ -13,6 +13,7 @@ class DosTool(BaseTool):
             name="Discipline of Study",
             model="gpt-3.5-turbo",
             temperature=0.75,
+            file_inputs=None,
             inputs=[
                 {
                     "input_label": "Topic or Objective",

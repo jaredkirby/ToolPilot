@@ -33,6 +33,22 @@ def create_chat(temperature, model, stream_handler):
     return chat
 
 
+# Function to create an data upload widget for each input field required by the tool
+def create_data_upload(tool):
+    user_uploads = []
+    if not tool.file_inputs == None:
+        for upload_field in tool.file_inputs:
+            user_input = st.file_uploader(
+                f"Input {upload_field['input_label']}",
+                accept_multiple_files=False,
+                type="PDF",
+                key=f"{tool.name}_{upload_field['input_label']}",
+                help=upload_field["help_label"],
+            )
+            user_uploads.append(user_input)
+    return user_uploads
+
+
 # Function to create an input text area for each input field required by the tool
 def create_input_fields(tool):
     user_inputs = []
@@ -78,7 +94,7 @@ def create_generate_button(tool):
 
 
 # Function to handle the 'Generate' button when it is clicked
-def handle_button_click(button, tool, temperature, model, user_inputs):
+def handle_button_click(button, tool, temperature, model, user_inputs, user_uploads):
     if button:
         st.markdown("**Response:**")
         chat_box = st.empty()
@@ -86,7 +102,7 @@ def handle_button_click(button, tool, temperature, model, user_inputs):
         chat = create_chat(temperature, model, stream_handler)
         if chat and tool:
             try:
-                response = tool.execute(chat, *user_inputs)
+                response = tool.execute(chat, user_inputs[0], user_uploads[0])
                 # Save the selected model and temperature along with the response
                 response_with_settings = {
                     "response": response,
@@ -107,12 +123,13 @@ def handle_tab(tool):
     if "responses" not in st.session_state:
         st.session_state["responses"] = {}
 
-    # Always create the input fields, advanced options, and the button
+    # Create the input fields, advanced options, and the button
+    user_uploads = create_data_upload(tool)
     user_inputs = create_input_fields(tool)
     model, temperature = create_advanced_options(tool)
     button = create_generate_button(tool)
 
-    handle_button_click(button, tool, temperature, model, user_inputs)
+    handle_button_click(button, tool, temperature, model, user_inputs, user_uploads)
 
     # Display the 'Clear Responses' button if there are saved responses for the current tab
     if (

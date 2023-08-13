@@ -12,6 +12,7 @@ class PilotTool(BaseTool):
             name="PromptPilot",
             model="gpt-4",
             temperature=1.0,
+            file_inputs=None,
             inputs=[
                 {
                     "input_label": "Original Prompt",

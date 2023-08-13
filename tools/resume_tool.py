@@ -12,6 +12,7 @@ class ResumeTool(BaseTool):
             name="Resume",
             model="gpt-4",
             temperature=0.75,
+            file_inputs=None,
             inputs=[
                 {
                     "input_label": "Job Description",
