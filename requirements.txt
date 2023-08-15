@@ -4,3 +4,4 @@ langchain
 metaphor_python
 lancedb
 pdfplumber
+tiktoken

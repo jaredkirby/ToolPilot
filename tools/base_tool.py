@@ -9,5 +9,5 @@ class BaseTool:
         self.uploads = uploads
         self.inputs: List[Dict[str, Any]] = inputs
 
-    def execute(self, chat, inputs: [Dict[str, Any]], uploads: List) -> Any:
+    def execute(self, chat, inputs: [Dict[str, Any]], uploads) -> Any:
         pass
