@@ -12,7 +12,7 @@ class PurposeTool(BaseTool):
             name="Prompt Purpose",
             model="gpt-3.5-turbo",
             temperature=0.75,
-            file_inputs=None,
+            uploads=None,
             inputs=[
                 {
                     "input_label": "Prompt",

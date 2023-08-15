@@ -17,7 +17,7 @@ openai_api_key = st.secrets["OPENAI_API_KEY"]
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 
 
-def create_chat(temperature, model, stream_handler):
+def create_chat(temperature: float, model: str, stream_handler):
     try:
         chat = ChatOpenAI(
             temperature=temperature,
@@ -35,18 +35,18 @@ def create_chat(temperature, model, stream_handler):
 
 # Function to create an data upload widget for each input field required by the tool
 def create_data_upload(tool):
-    user_uploads = []
-    if not tool.file_inputs == None:
-        for upload_field in tool.file_inputs:
-            user_input = st.file_uploader(
+    uploads = []
+    if not tool.uploads == None:
+        for upload_field in tool.uploads:
+            uploaded_file = st.file_uploader(
                 f"Input {upload_field['input_label']}",
                 accept_multiple_files=False,
                 type="PDF",
                 key=f"{tool.name}_{upload_field['input_label']}",
                 help=upload_field["help_label"],
             )
-            user_uploads.append(user_input)
-    return user_uploads
+            uploads.append(uploaded_file)
+    return uploads
 
 
 # Function to create an input text area for each input field required by the tool
@@ -94,44 +94,53 @@ def create_generate_button(tool):
 
 
 # Function to handle the 'Generate' button when it is clicked
-def handle_button_click(button, tool, temperature, model, user_inputs, user_uploads):
+def handle_button_click(button, tool, temperature: float, model: str, inputs, uploads):
     if button:
         st.markdown("**Response:**")
         chat_box = st.empty()
         stream_handler = StreamHandler(chat_box)
         chat = create_chat(temperature, model, stream_handler)
+
+        # Generate response
         if chat and tool:
-            try:
-                response = tool.execute(chat, *user_inputs, *user_uploads)
-                # Save the selected model and temperature along with the response
-                response_with_settings = {
-                    "response": response,
-                    "model": model,
-                    "temperature": temperature,
-                }
-                if "responses" not in st.session_state:
-                    st.session_state["responses"] = {}
-                if tool.name not in st.session_state["responses"]:
-                    st.session_state["responses"][tool.name] = []
-                st.session_state["responses"][tool.name].append(response_with_settings)
-            except Exception as e:
-                st.error(f"An error occurred while executing the tool: {str(e)}")
+            # try:
+            response = tool.execute(chat, *inputs, *uploads)
+        # except Exception as e:
+        #    st.error(f"An error occurred while generating response: {str(e)}")
+        #    response = None
+
+        # Save response to session state
+        if response:
+            # try:
+            response_with_settings = {
+                "response": response,
+                "model": model,
+                "temperature": temperature,
+            }
+            if "responses" not in st.session_state:
+                st.session_state["responses"] = {}
+            if tool.name not in st.session_state["responses"]:
+                st.session_state["responses"][tool.name] = []
+            st.session_state["responses"][tool.name].append(response_with_settings)
+        # except Exception as e:
+        #    st.error(f"An error occurred while saving response: {str(e)}")
 
 
+# Function to handle the current tab
 def handle_tab(tool):
     # Initialize 'responses' in session state if it doesn't exist
     if "responses" not in st.session_state:
         st.session_state["responses"] = {}
 
     # Create the input fields, advanced options, and the button
-    user_uploads = create_data_upload(tool)
-    user_inputs = create_input_fields(tool)
+    uploads = create_data_upload(tool)
+    inputs = create_input_fields(tool)
     model, temperature = create_advanced_options(tool)
     button = create_generate_button(tool)
 
-    handle_button_click(button, tool, temperature, model, user_inputs, user_uploads)
+    handle_button_click(button, tool, temperature, model, inputs, uploads)
 
-    # Display the 'Clear Responses' button if there are saved responses for the current tab
+    # Display past responses
     if (
         tool.name in st.session_state["responses"]
         and st.session_state["responses"][tool.name]
@@ -152,7 +161,6 @@ def handle_tab(tool):
 
         clear_button = st.button(f"Clear Responses for {tool.name}")
         if clear_button:
-            # Clear the responses for the current tab
             st.session_state["responses"][tool.name] = []
             clear_button = None
             st.experimental_rerun()
