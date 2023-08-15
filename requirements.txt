@@ -3,3 +3,4 @@ streamlit
 langchain
 metaphor_python
 lancedb
+pdfplumber
