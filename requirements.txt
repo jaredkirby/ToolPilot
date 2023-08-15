@@ -3,3 +3,5 @@ streamlit
 langchain
 metaphor_python
 lancedb
+pickle
+tempfile

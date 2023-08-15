@@ -19,12 +19,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 
 import lancedb
-import json
 import pickle
-import io
 import tempfile
-
-from typing import List, Dict, Any
 
 
 class ShopperTool(BaseTool):
