@@ -5,6 +5,7 @@ from langchain import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.summarize import load_summarize_chain
 from langchain.tools import BaseTool
+from langchain.chat_models import ChatOpenAI
 from datetime import datetime
 import json
 import uuid
@@ -15,10 +16,10 @@ from .base_tool import BaseTool
 class ResearchAgentTool(BaseTool):
     def __init__(self, metaphor_api_key):
         super().__init__(
-            name="AI Research Agent",
+            name="Research Agent",
             model="gpt-3.5-turbo-16k",
             temperature=1.0,
-            file_inputs=None,
+            uploads=None,
             inputs=[
                 {
                     "input_label": "Research goal",
@@ -30,10 +31,20 @@ class ResearchAgentTool(BaseTool):
         )
         self.metaphor_api_key = metaphor_api_key
 
+    # TODO: Change each step to a separate function
     def execute(self, chat, research_goal):
         metaphor = Metaphor(api_key=self.metaphor_api_key)
+        search_response = self._search(chat, research_goal, metaphor)
+        results = self._scrape_and_summarize(
+            chat, research_goal, metaphor, search_response
+        )
+        output = self._combine_results(results)
+        self._save_to_file(research_goal, output)
+        return output
 
         # 1. Tool for search
+
+    def _search(self, chat, research_goal, metaphor):
         search_response = metaphor.search(research_goal, use_autoprompt=True)
         results = [
             {
@@ -44,6 +55,8 @@ class ResearchAgentTool(BaseTool):
         ]
 
         # 2. Tool for scraping and summarizing
+
+    def _scrape_and_summarize(self, chat, research_goal, metaphor, results):
         all_content = []
         for result in results:
             url = result["url"]
@@ -63,19 +76,19 @@ class ResearchAgentTool(BaseTool):
             all_content.append(
                 {"title": result["title"], "url": url, "content": output}
             )
-
-        # Save the output (you may customize the saving method as needed)
-        self._save_to_file(research_goal, all_content)
+            return all_content
 
         # Combine the results into a displayable format
+
+    def _combine_results(self, all_content):
         result_display = ""
         for content in all_content:
             result_display += f"Title: {content['title']}\nURL: {content['url']}\nContent: {content['content']}\n\n"
 
         return result_display
 
-    def _summary(self, objective, content, chat):
-        # llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
+    def _summary(self, objective, content):
+        llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 
         text_splitter = RecursiveCharacterTextSplitter(
             separators=["\n\n", "\n"], chunk_size=10000, chunk_overlap=500
@@ -91,7 +104,7 @@ class ResearchAgentTool(BaseTool):
         )
 
         summary_chain = load_summarize_chain(
-            llm=chat,
+            llm=llm,
             chain_type="map_reduce",
             map_prompt=map_prompt_template,
             combine_prompt=map_prompt_template,

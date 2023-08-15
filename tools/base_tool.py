@@ -1,10 +1,13 @@
-class BaseTool:
-    def __init__(self, name, model, temperature, file_inputs, inputs):
-        self.name = name
-        self.model = model
-        self.temperature = temperature
-        self.file_inputs = file_inputs
-        self.inputs = inputs
+from typing import List, Dict, Any
 
-    def execute(self, chat, tool_registry, *args):
+
+class BaseTool:
+    def __init__(self, name, model, temperature, inputs, uploads):
+        self.name: str = name
+        self.model: str = model
+        self.temperature: float = temperature
+        self.uploads = uploads
+        self.inputs: List[Dict[str, Any]] = inputs
+
+    def execute(self, chat, inputs: [Dict[str, Any]], uploads: List) -> Any:
         pass

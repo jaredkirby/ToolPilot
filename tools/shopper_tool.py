@@ -24,6 +24,8 @@ import pickle
 import io
 import tempfile
 
+from typing import List, Dict, Any
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,7 +37,7 @@ class ShopperTool(BaseTool):
             name="Shopper",
             model="gpt-4",
             temperature=0.0,
-            file_inputs=[
+            uploads=[
                 {
                     "input_label": "Upload PDF",
                     "help_label": "Upload a PDF to be used as the source document.",
@@ -51,22 +53,20 @@ class ShopperTool(BaseTool):
             ],
         )
 
-    def execute(self, chat, inputs, file_inputs):
-        self._ingest_pdf(file_inputs)
+    def execute(self, chat, inputs, uploads):
+        self._ingest_pdf(uploads)
         basic_qa_chain = self._basic_qa_chain(chat)
         question_input = {
-            "question": inputs[0],
+            "question": inputs,
             "chat_history": [],
         }
         result = basic_qa_chain.run(question_input)
-        return result["response"]
+        return result
 
     # 1 Ingest, split, and embed PDF Docs
-    def _ingest_pdf(self, file_inputs):
+    def _ingest_pdf(self, uploads):
         print("Loading data...")
-        uploaded_file = (
-            file_inputs  # Directly using file_inputs as an UploadedFile object
-        )
+        uploaded_file = uploads  # Directly using file_inputs as an UploadedFile object
         file_bytes = (
             uploaded_file.read()
         )  # Reading the content of the uploaded file as bytes
@@ -84,7 +84,7 @@ class ShopperTool(BaseTool):
             chunk_size=1000,
             chunk_overlap=200,
         )
-        documents = text_splitter.split_documents(raw_documents)
+        split_documents = text_splitter.split_documents(raw_documents)
 
         print("Creating vectorstore...")
         embeddings = OpenAIEmbeddings()
@@ -100,7 +100,9 @@ class ShopperTool(BaseTool):
             ],
             mode="overwrite",
         )
-        vectorstore = LanceDB.from_documents(documents, embeddings, connection=table)
+        vectorstore = LanceDB.from_documents(
+            split_documents, embeddings, connection=table
+        )
         with open("./vector_db/vectorstore.pkl", "wb") as f:
             pickle.dump(vectorstore, f)
 
@@ -117,6 +119,6 @@ class ShopperTool(BaseTool):
             memory_key="chat_history", return_messages=True
         )
         chain = ConversationalRetrievalChain.from_llm(
-            llm=chat, retriever=retriever, memory=memory
+            llm=chat, retriever=retriever, memory=memory, verbose=True
         )
         return chain

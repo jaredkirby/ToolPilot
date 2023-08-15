@@ -12,7 +12,7 @@ class InstructTool(BaseTool):
             name="Improve Prompt Instructions",
             model="gpt-4",
             temperature=0.5,
-            file_inputs=None,
+            uploads=None,
             inputs=[
                 {
                     "input_label": "Original Instructions",
