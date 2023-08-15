@@ -105,6 +105,7 @@ def handle_button_click(button, tool, temperature: float, model: str, inputs, up
         if chat and tool:
             # try:
             response = tool.execute(chat, *inputs, *uploads)
+            st.info(response)
         # except Exception as e:
         #    st.error(f"An error occurred while generating response: {str(e)}")
         #    response = None
