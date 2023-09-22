@@ -13,23 +13,9 @@ class ResumeTool(BaseTool):
             model="gpt-4",
             temperature=0.75,
             uploads=None,
-            inputs=[
-                {
-                    "input_label": "Job Description",
-                    "example": "Write and edit scripts for Youtube videos",
-                    "button_label": "Job Keywords",
-                    "help_label": "The Resume tool helps by reviewing a given resume and job description and generates an optimized version.",
-                },
-                {
-                    "input_label": "Resume",
-                    "example": "Write and edit scripts for Youtube videos",
-                    "button_label": "Resume",
-                    "help_label": "The Resume tool helps by reviewing a given resume and job description and generates an optimized version.",
-                },
-            ],
         )
 
-    def execute(self, chat, *inputs):
+    def execute(self, chat, job_description, resume):
         instruct_gen_template = f"""\
 You are an expert AI job application resume writer and editor.
 You apply the following step-by-step process to generate a resume for an applicant:
@@ -39,12 +25,12 @@ You apply the following step-by-step process to generate a resume for an applica
 
 Job Description:
 ---
-{inputs[0]}
+{job_description}
 ---
 
 Resume:
 ---
-{inputs[1]}
+{resume}
 ---
 
 Please respond in this order: 
@@ -58,9 +44,9 @@ Format your response in markdown.
         user_prompt = HumanMessagePromptTemplate.from_template(
             template=instruct_gen_template
         )
-        chat_prompt = ChatPromptTemplate.from_messages([user_prompt])
+        chat_prompt = ChatPromptTemplate.from_messages(user_prompt)
         formatted_prompt = chat_prompt.format_prompt(
-            user_input=inputs[0], user_input_two=inputs[1] if len(inputs) > 1 else None
+            job_description=job_description, resume=resume
         ).to_messages()
         llm = chat
         result = llm(formatted_prompt)
