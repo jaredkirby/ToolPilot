@@ -13,7 +13,7 @@ class ResumeInput(BaseModel):
     temperature: float = 0.75
 
 
-@router.post("/execute")
+@router.post("/resume-execute")
 async def execute_resume_tool(input: ResumeInput):
     resume_tool = ResumeTool()  # Instantiate your ResumeTool class
     result = resume_tool.execute(input.job_description, input.resume, input.temperature)
