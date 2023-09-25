@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from ..tools.resume_tool import ResumeTool  # Import your tool logic
+from ..api_tools.resume_tool import ResumeTool  # Import your tool logic
 
 router = APIRouter()
 
